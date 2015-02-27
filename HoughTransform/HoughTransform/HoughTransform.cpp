@@ -6,26 +6,71 @@
 
 
 #include "stdafx.h"				//Precompiled Header for Faster Compilation
-#include "stdio.h"
+#include <stdio.h>
+//#include <unistd.h> //For STDERR
+#include <string>
+#include <map>
 #include <iostream>
-#include <math.h>
+
+#include "houghClass.h"
+//#include <dirent.h> //Never used?
+
+//extern FILE *stdin;
+//extern FILE *stdout;
+//extern FILE *stderr;
 
 using namespace std;
 
+string img_path;
+int threshold = 0;
+int cols = 1920;
+int rows = 1080;
 
-int main(int argc, _TCHAR* argv[])
-{
-	//Read Image
 
-	//Canny Edge Detection
+void doTransform(string, int threshold);
+//Usage was here
 
-	//Hough Transform
+int main(int argc, char** argv) {
 
-	//Output
+	//Code Here took care of basic input arguments
 
-	//Extra Notes:
+	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
+
+	doTransform(/*Put our own image in there*/, threshold);
+
 	return 0;
 }
+
+
+
+void doTransform(string file_path, int threshold)
+{
+	//USES OpenCV to blur image, then perform basic Canny Edge on it
+
+	int w = cols;
+	int h = rows;
+
+	//Transform
+	Hough hough;
+	hough.Transform(/*Matrix of Px Data*/, w, h);
+
+	if (threshold == 0)
+		threshold = w>h ? w / 4 : h / 4;
+
+	while (1)
+	{
+		//cv::Mat img_res = img_ori.clone();
+
+		//Search the accumulator
+		vector<pair<pair<int, int>, pair<int, int>>> lines = hough.GetLines(threshold);
+
+		//Draw the results
+		vector<pair<pair<int, int>, pair<int, int>>> iterator it;
+
+		//DONE IN OPEN CV, this displays final image with lines drawn on it based on accumulator
+	}
+}
+
 
 /*Ideas and step by step
 
