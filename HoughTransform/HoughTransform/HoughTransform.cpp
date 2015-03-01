@@ -13,7 +13,7 @@
 
 using namespace std;
 
-string img_path = "C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/AngelaHeadshot.jpg";
+string img_path = "C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/AngelaHeadshot.jpg"; //this will be replaced by output of Canny code
 int threshold = 0;
 int cols = 1920;
 int rows = 1080;
@@ -24,6 +24,7 @@ void doTransform(string, int threshold);
 
 int main(int argc, char** argv) {
 	
+	//Canny code goes here, read/stored into img_path
 	//Code Here took care of basic input arguments
 
 	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
@@ -56,6 +57,10 @@ void doTransform(string file_path, int threshold)
 		//Creating output
 		//Search the accumulator
 		vector<pair<pair<int, int>, pair<int, int>>> lines = hough.GetLines(threshold);
+		
+		//use accumulator to determine which lines are important based on threshold
+		//draw these lines on original image to show that it worked
+		//display the image (maybe just write file and open it manually)
 
 		//DONE IN OPEN CV, this displays final image with lines drawn on it based on accumulator
 	}
@@ -65,20 +70,20 @@ void doTransform(string file_path, int threshold)
 /*Ideas and step by step
 
 1: Read in image from source
-	a: webcam will be used in final implementation to contuniously capture images
+	a: webcam will be used in final implementation to continuously capture images
 	b: Read image from file for now, replace with webcam later
 2: Apply Canny Edge Detection on it to get BW image with white edges
 	a: Create greyscale version of input image
 	b: Smooth out the lines
 	c: Apply gradient along X and Y directions
 	d: Suppress noise/width of line
-	e: Edge threshholding
+	e: Edge thresholding
 3: Apply Hough Transform on this image to determine which ones are most likely lines
 	a: Go through image, pixel by pixel, if white go to next step
 		1: Determine r for every Theta at that pixel
 		2: Increment correct bin for this line (will update 180 bins)
 	b: Go through each bin of accumulator
-		1: If above certain threshhold determine if local maxima
+		1: If above certain threshold determine if local maxima
 		2: If above is met, save line for later
 4: Draw these lines either on image or on new image
 	a: Drawing on new image allows to map directly to coordinate system <- This is probably better
