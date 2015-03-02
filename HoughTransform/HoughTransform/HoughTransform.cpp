@@ -10,14 +10,17 @@
 #include <iostream>
 #include "houghClass.h"
 #include "canny.h"
+#include <vector>
 
 using namespace std;
 
 char * img_path = "C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced by output of Canny code
 int threshold = 0;
 int cols = 1920;
-int rows = 1080;
+int rows = 2560;
 unsigned char* pixData;
+static bitmap_info_header_t ih;
+//bitmap_info_header_t *BMIH;
 
 void doTransform(char *, int threshold);
 
@@ -27,6 +30,36 @@ unsigned char* readBMP(char* filename)
 	FILE* f = fopen(filename, "rb");
 	unsigned char info[54];
 	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
+	
+	/*if (fseek(f, 0, SEEK_SET)) 
+	{
+		fclose(f);
+		return NULL;
+	}
+
+	//before header
+	bmpfile_header_t fileHeader; // our bitmap file header
+	// read the bitmap file header
+	if (fread(&fileHeader, sizeof(bmpfile_header_t),
+		1, f) != 1) {
+		fclose(f);
+		return NULL;
+	}
+
+	// read the bitmap info header
+	if (fread(BMIH, sizeof(bitmap_info_header_t), 1, f) != 1) {
+		fclose(f);
+		return NULL;
+	}
+
+	if (BMIH->compress_type != 0)
+		fprintf(stderr, "Warning, compression is not supported.\n");
+
+	// move file point to the beginning of bitmap data
+	if (fseek(f, fileHeader.bmp_offset, SEEK_SET)) {
+		fclose(f);
+		return NULL;
+	}//End header */
 
 	// extract image height and width from header
 	int width = *(int*)&info[18];
@@ -47,15 +80,45 @@ unsigned char* readBMP(char* filename)
 	return data;
 }
 
+void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int width)
+{
+	int deltax = x1 - x0;
+	int deltay = y1 - y0;
+	float error = 0;
+	if (deltax == 0)
+	{
+		//logic for vertical line
+	}
+	else
+	{
+		float deltaerr = abs(deltay / deltax);    // Assume deltax != 0 (line is not vertical),
+		// note that this division needs to be done in a way that preserves the fractional part
+		int y = y0;
+		for (int x = x0; x < x1; x++)
+		{
+			//CHANGE RGB VALUES plot(x, y)
+			bitMapValues[x * width + y] = 0; //RED VALUE
+			bitMapValues[x * width + y + 1] = 255; //GREEN VALUE, I like green
+			bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
+			
+			error = error + deltaerr;
+			while (error >= 0.5)
+			{
+				//CHANGE RGB VALUES plot(x, y);
+				y = y + (y1 - y0);
+				error = error - 1.0;
+				bitMapValues[x * width + y] = 0; //RED VALUE
+				bitMapValues[x * width + y + 1] = 255; //GREEN VALUE, I like green
+				bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
+
+			}
+		}
+	}
+}
+
 int main(const int argc, const char ** const argv)
 {
-    /*if (argc < 2) {
-        printf("Usage: %s image.bmp\n", argv[0]);
-        return 1;
-    }*/
- 
     canny CANNY;
-    static bitmap_info_header_t ih;
     const pixel_t *in_bitmap_data = CANNY.load_bmp(img_path, &ih);
     if (in_bitmap_data == NULL) {
         fprintf(stderr, "main: BMP image not loaded.\n");
@@ -98,8 +161,10 @@ void doTransform(char* file_path, int threshold)
 	int h = rows;
 
 	//Transform
+	unsigned char* BUTTMAP = readBMP(file_path);
+
 	Hough hough;
-	hough.Transform(readBMP(file_path), w, h);
+	hough.Transform(BUTTMAP, w, h);
 
 	if (threshold == 0)
 		threshold = w>h ? w / 4 : h / 4;
@@ -109,8 +174,17 @@ void doTransform(char* file_path, int threshold)
 		//Creating output
 		//Search the accumulator
 		vector<pair<pair<int, int>, pair<int, int>>> lines = hough.GetLines(threshold);
-		cout << "I love you so much" << endl;
-		
+
+		vector<pair<pair<int, int>, pair<int, int>>>::iterator it;
+		for (it = lines.begin(); it != lines.end(); it++)
+		{
+			drawLine(it->first.first, it->first.second, it->second.first, it->second.second, BUTTMAP, w);
+		}
+
+		canny HOUGH;
+		const pixel_t* ptr = (pixel_t*) BUTTMAP;
+		HOUGH.save_bmp("out2.bmp", &ih, ptr);
+
 		char input;
 		cin >> input;
 
@@ -120,7 +194,6 @@ void doTransform(char* file_path, int threshold)
 		//draw these lines on original image to show that it worked
 		//display the image (maybe just write file and open it manually)
 
-		//DONE IN OPEN CV, this displays final image with lines drawn on it based on accumulator
 	}
 }
 
