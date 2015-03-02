@@ -99,7 +99,9 @@ pixel_t *canny::load_bmp(const char *filename, bitmap_info_header_t *bitmapInfoH
     }
  
     // allocate enough memory for the bitmap image data
-    pixel_t *bitmapImage = new pixel_t (bitmapInfoHeader->bmp_bytesz *sizeof(pixel_t));
+	pixel_t *bitmapImage = (pixel_t *) malloc(bitmapInfoHeader->bmp_bytesz *sizeof(pixel_t));
+	//pixel_t *bitmapImage = malloc(bitmapInfoHeader->bmp_bytesz *sizeof(pixel_t));
+	//pixel_t *bitmapImage = new pixel_t (bitmapInfoHeader->bmp_bytesz *sizeof(pixel_t));
  
     // verify memory allocation
     if (bitmapImage == NULL) {
@@ -108,13 +110,16 @@ pixel_t *canny::load_bmp(const char *filename, bitmap_info_header_t *bitmapInfoH
     }
  
     // read in the bitmap image data
-    size_t pad, count=0;
+    size_t pad, count = 0;
     unsigned char c;
     pad = 4*ceil(bitmapInfoHeader->bitspp*bitmapInfoHeader->width/32.) - bitmapInfoHeader->width;
-    size_t i,j;
-    for(i=0; i<bitmapInfoHeader->height; i++){
-	    for(j=0; j<bitmapInfoHeader->width; j++){
-		    if (fread(&c, sizeof(unsigned char), 1, filePtr) != 1) {
+    size_t i,j;	
+	for(i = 0; i < bitmapInfoHeader->height; i++)
+	{
+	    for(j = 0; j < bitmapInfoHeader->width; j++)
+		{
+		    if (fread(&c, sizeof(unsigned char), 1, filePtr) != 1) 
+			{
 			    fclose(filePtr);
 			    return NULL;
 		    }
@@ -257,7 +262,7 @@ void canny::gaussian_filter(const pixel_t *in, pixel_t *out, const int nx, const
 {
     const int n = 2 * (int)(2 * sigma) + 3;
     const float mean = (float)floor(n / 2.0);
-	float *kernel = new float[n*n];
+	float *kernel =  new float[n*n];
     //float kernel[n * n]; // variable length array
  
     fprintf(stderr, "gaussian_filter: kernel size %d, sigma=%g\n",
@@ -288,11 +293,11 @@ pixel_t *canny::canny_edge_detection(const pixel_t *in, const bitmap_info_header
     const int nx = bmp_ih->width;
     const int ny = bmp_ih->height;
  
-    pixel_t *G = new pixel_t (nx * ny * sizeof(pixel_t), 1);
-    pixel_t *after_Gx = new pixel_t (nx * ny * sizeof(pixel_t), 1);
-    pixel_t *after_Gy = new pixel_t (nx * ny * sizeof(pixel_t), 1);
-    pixel_t *nms = new pixel_t (nx * ny * sizeof(pixel_t), 1);
-    pixel_t *out = new pixel_t (bmp_ih->bmp_bytesz * sizeof(pixel_t));
+	pixel_t *G =		(pixel_t *) calloc(nx * ny * sizeof(pixel_t), 1);
+	pixel_t *after_Gx = (pixel_t *) calloc(nx * ny * sizeof(pixel_t), 1);
+	pixel_t *after_Gy = (pixel_t *) calloc(nx * ny * sizeof(pixel_t), 1);
+	pixel_t *nms =		(pixel_t *) calloc(nx * ny * sizeof(pixel_t), 1);
+    pixel_t *out =		(pixel_t *) malloc (bmp_ih->bmp_bytesz * sizeof(pixel_t));
  
     if (G == NULL || after_Gx == NULL || after_Gy == NULL ||
         nms == NULL || out == NULL) {
@@ -319,7 +324,7 @@ pixel_t *canny::canny_edge_detection(const pixel_t *in, const bitmap_info_header
         for (j = 1; j < ny - 1; j++) {
             const int c = i + nx * j;
             // G[c] = abs(after_Gx[c]) + abs(after_Gy[c]);
-            G[c] = (pixel_t)hypot(after_Gx[c], after_Gy[c]);
+			G[c] = (pixel_t)hypot((float)after_Gx[c], (float)after_Gy[c]);
         }
  
     // Non-maximum suppression, straightforward implementation.
@@ -335,7 +340,7 @@ pixel_t *canny::canny_edge_detection(const pixel_t *in, const bitmap_info_header
             const int sw = ss + 1;
             const int se = ss - 1;
  
-            const float dir = (float)(fmod(atan2(after_Gy[c],after_Gx[c]) + M_PI,M_PI) / M_PI) * 8;
+            const float dir = (float)(fmod(atan2((float)after_Gy[c],(float)after_Gx[c]) + M_PI,M_PI) / M_PI) * 8;
  
             if (((dir <= 1 || dir > 7) && G[c] > G[ee] &&
                  G[c] > G[ww]) || // 0 deg

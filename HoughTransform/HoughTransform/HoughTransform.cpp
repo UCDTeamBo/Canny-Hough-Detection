@@ -13,7 +13,7 @@
 
 using namespace std;
 
-string img_path = "C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/AngelaHeadshot.jpg"; //this will be replaced by output of Canny code
+char * img_path = "C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced by output of Canny code
 int threshold = 0;
 int cols = 1920;
 int rows = 1080;
@@ -24,14 +24,14 @@ void doTransform(string, int threshold);
 
 int main(const int argc, const char ** const argv)
 {
-    if (argc < 2) {
+    /*if (argc < 2) {
         printf("Usage: %s image.bmp\n", argv[0]);
         return 1;
-    }
+    }*/
  
     canny CANNY;
     static bitmap_info_header_t ih;
-    const pixel_t *in_bitmap_data = CANNY.load_bmp(argv[1], &ih);
+    const pixel_t *in_bitmap_data = CANNY.load_bmp(img_path, &ih);
     if (in_bitmap_data == NULL) {
         fprintf(stderr, "main: BMP image not loaded.\n");
         return 1;
@@ -40,26 +40,25 @@ int main(const int argc, const char ** const argv)
     printf("Info: %d x %d x %d\n", ih.width, ih.height, ih.bitspp);
  
     const pixel_t *out_bitmap_data = CANNY.canny_edge_detection(in_bitmap_data, &ih, 45, 50, 3.0f);
-    if (out_bitmap_data == NULL) {
+    /*if (out_bitmap_data == NULL) {
         fprintf(stderr, "main: failed canny_edge_detection.\n");
         return 1;
-    }
+    }*/
  
     if (CANNY.save_bmp("out.bmp", &ih, out_bitmap_data)) {
         fprintf(stderr, "main: BMP image not saved.\n");
         return 1;
     }
- 
-    free((pixel_t*)in_bitmap_data);
-    free((pixel_t*)out_bitmap_data);
-    return 0;
 
 	//Canny code goes here, read/stored into img_path
 	//Code Here took care of basic input arguments
 
 	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
 
-	doTransform(img_path, threshold);
+	//doTransform(img_path, threshold);
+
+	free((pixel_t*)in_bitmap_data);
+	free((pixel_t*)out_bitmap_data);
 
 	return 0;
 }
