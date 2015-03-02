@@ -14,11 +14,12 @@
 
 using namespace std;
 
-char * img_path = "C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced by output of Canny code
+char * img_path = "C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced by output of Canny code
 int threshold = 0;
 int cols = 1920;
 int rows = 2560;
 unsigned char* pixData;
+unsigned char info[54];
 static bitmap_info_header_t ih;
 //bitmap_info_header_t *BMIH;
 
@@ -28,7 +29,7 @@ unsigned char* readBMP(char* filename)
 {
 	int i;
 	FILE* f = fopen(filename, "rb");
-	unsigned char info[54];
+
 	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 	
 	/*if (fseek(f, 0, SEEK_SET)) 
@@ -105,10 +106,10 @@ void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int w
 			while (error >= 0.5)
 			{
 				//CHANGE RGB VALUES plot(x, y);
-				y = y + (y1 - y0);
+				y = y + abs(y1 - y0);
 				error = error - 1.0;
-				bitMapValues[x * width + y] = 0; //RED VALUE
-				bitMapValues[x * width + y + 1] = 255; //GREEN VALUE, I like green
+				bitMapValues[x * width + y] = 255; //RED VALUE
+				bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
 				bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
 
 			}
@@ -143,7 +144,7 @@ int main(const int argc, const char ** const argv)
 
 	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
 
-	doTransform("C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
+	doTransform("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
 
 	free((pixel_t*)in_bitmap_data);
 	free((pixel_t*)out_bitmap_data);
@@ -167,7 +168,7 @@ void doTransform(char* file_path, int threshold)
 	hough.Transform(BUTTMAP, w, h);
 
 	if (threshold == 0)
-		threshold = w>h ? w / 4 : h / 4;
+		threshold = 0;// w > h ? w / 4 : h / 4;
 
 	while (1)
 	{
@@ -178,12 +179,23 @@ void doTransform(char* file_path, int threshold)
 		vector<pair<pair<int, int>, pair<int, int>>>::iterator it;
 		for (it = lines.begin(); it != lines.end(); it++)
 		{
-			drawLine(it->first.first, it->first.second, it->second.first, it->second.second, BUTTMAP, w);
+			drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
 		}
 
-		canny HOUGH;
+		int i;
+		FILE* f = fopen(file_path, "rb");
+		fwrite(info, sizeof(unsigned char), 54, f); // write the 54-byte header
+
+		int width = *(int*)&info[18];
+		int height = *(int*)&info[22];
+
+		int size = 3 * width * height;
+		fwrite(BUTTMAP, sizeof(unsigned char), size, f); // read the rest of the data at once
+		fclose(f);
+
+		/*canny HOUGH;
 		const pixel_t* ptr = (pixel_t*) BUTTMAP;
-		HOUGH.save_bmp("out2.bmp", &ih, ptr);
+		HOUGH.save_bmp("out2.bmp", &ih, ptr);*/
 
 		char input;
 		cin >> input;
