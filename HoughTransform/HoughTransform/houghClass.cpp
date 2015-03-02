@@ -111,7 +111,7 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 		}
 	}
 	
-	cout << "lines: " << lines.size() << " " << threshold << endl;
+	//cout << "lines: " << lines.size() << " " << threshold << endl;
 	return lines;
 }
 

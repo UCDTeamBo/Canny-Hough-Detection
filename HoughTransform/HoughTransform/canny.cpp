@@ -402,3 +402,4 @@ pixel_t *canny::canny_edge_detection(const pixel_t *in, const bitmap_info_header
  
     return out;
 }
+

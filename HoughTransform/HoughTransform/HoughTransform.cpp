@@ -19,8 +19,33 @@ int cols = 1920;
 int rows = 1080;
 unsigned char* pixData;
 
-void doTransform(string, int threshold);
+void doTransform(char *, int threshold);
 
+unsigned char* readBMP(char* filename)
+{
+	int i;
+	FILE* f = fopen(filename, "rb");
+	unsigned char info[54];
+	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
+
+	// extract image height and width from header
+	int width = *(int*)&info[18];
+	int height = *(int*)&info[22];
+
+	int size = 3 * width * height;
+	unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
+	fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
+	fclose(f);
+
+	for (i = 0; i < size; i += 3)
+	{
+		unsigned char tmp = data[i];
+		data[i] = data[i + 2];
+		data[i + 2] = tmp;
+	}
+
+	return data;
+}
 
 int main(const int argc, const char ** const argv)
 {
@@ -55,7 +80,7 @@ int main(const int argc, const char ** const argv)
 
 	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
 
-	//doTransform(img_path, threshold);
+	doTransform("C:/Users/Chris/Desktop/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
 
 	free((pixel_t*)in_bitmap_data);
 	free((pixel_t*)out_bitmap_data);
@@ -65,10 +90,8 @@ int main(const int argc, const char ** const argv)
 
 
 
-void doTransform(string file_path, int threshold)
+void doTransform(char* file_path, int threshold)
 {
-	//USES OpenCV to blur image, then perform basic Canny Edge on it
-
 
 	//READ IN FILE
 	int w = cols;
@@ -76,7 +99,7 @@ void doTransform(string file_path, int threshold)
 
 	//Transform
 	Hough hough;
-	hough.Transform(pixData, w, h);
+	hough.Transform(readBMP(file_path), w, h);
 
 	if (threshold == 0)
 		threshold = w>h ? w / 4 : h / 4;
@@ -86,7 +109,13 @@ void doTransform(string file_path, int threshold)
 		//Creating output
 		//Search the accumulator
 		vector<pair<pair<int, int>, pair<int, int>>> lines = hough.GetLines(threshold);
+		cout << "I love you so much" << endl;
 		
+		char input;
+		cin >> input;
+
+		if (input == 'c')
+			return;
 		//use accumulator to determine which lines are important based on threshold
 		//draw these lines on original image to show that it worked
 		//display the image (maybe just write file and open it manually)
