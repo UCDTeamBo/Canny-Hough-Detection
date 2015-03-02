@@ -4,12 +4,12 @@
 //Functionality: Read in an image from live feed camera, detect objects using Canny Edge Detection and Hough Transform, then steer to avoid
 //Extra Libraries: None at the moment, but may use classes later for streamlining
 
-
 #include <stdio.h>
 #include <string>
 #include <map>
 #include <iostream>
 #include "houghClass.h"
+#include "canny.h"
 
 using namespace std;
 
@@ -20,10 +20,40 @@ int rows = 1080;
 unsigned char* pixData;
 
 void doTransform(string, int threshold);
-//Usage was here
 
-int main(int argc, char** argv) {
-	
+
+int main(const int argc, const char ** const argv)
+{
+    if (argc < 2) {
+        printf("Usage: %s image.bmp\n", argv[0]);
+        return 1;
+    }
+ 
+    canny CANNY;
+    static bitmap_info_header_t ih;
+    const pixel_t *in_bitmap_data = CANNY.load_bmp(argv[1], &ih);
+    if (in_bitmap_data == NULL) {
+        fprintf(stderr, "main: BMP image not loaded.\n");
+        return 1;
+    }
+ 
+    printf("Info: %d x %d x %d\n", ih.width, ih.height, ih.bitspp);
+ 
+    const pixel_t *out_bitmap_data = CANNY.canny_edge_detection(in_bitmap_data, &ih, 45, 50, 3.0f);
+    if (out_bitmap_data == NULL) {
+        fprintf(stderr, "main: failed canny_edge_detection.\n");
+        return 1;
+    }
+ 
+    if (CANNY.save_bmp("out.bmp", &ih, out_bitmap_data)) {
+        fprintf(stderr, "main: BMP image not saved.\n");
+        return 1;
+    }
+ 
+    free((pixel_t*)in_bitmap_data);
+    free((pixel_t*)out_bitmap_data);
+    return 0;
+
 	//Canny code goes here, read/stored into img_path
 	//Code Here took care of basic input arguments
 
