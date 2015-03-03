@@ -104,7 +104,7 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 					y2 = _img_h - 0;
 					x2 = ((double)(r-(_accu_h/2)) - ((y2 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
 				}
-
+				//cout << "X1: " << x1 << " Y1: " << y1 << " " << " X2: " << x2 << " Y2: " << y2 << endl;
 				lines.push_back(pair< pair<int, int>, pair<int, int> >(pair<int, int>(x1,y1), pair<int, int>(x2,y2)));
 
 			}

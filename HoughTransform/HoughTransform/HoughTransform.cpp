@@ -16,8 +16,8 @@ using namespace std;
 
 char * img_path = "C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced by output of Canny code
 int threshold = 0;
-int cols = 1920;
-int rows = 2560;
+int cols;
+int rows;
 unsigned char* pixData;
 unsigned char info[54];
 static bitmap_info_header_t ih;
@@ -66,6 +66,9 @@ unsigned char* readBMP(char* filename)
 	int width = *(int*)&info[18];
 	int height = *(int*)&info[22];
 
+	cols = width; 
+	rows = height; 
+
 	int size = 3 * width * height;
 	unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
 	fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
@@ -86,27 +89,46 @@ void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int w
 	int deltax = x1 - x0;
 	int deltay = y1 - y0;
 	float error = 0;
-	if (deltax == 0)
+	int temp1, temp2;
+	//cout << "X1: " << x0 << " Y1: " << y0 << " " << " X2: " << x1 << " Y2: " << y1 << endl;
+	if (deltax == 0 || deltay == 0)
 	{
+		return;
 		//logic for vertical line
+	}
+	if (x0 == 0)
+	{
+		x0 = x0 + 1;
 	}
 	else
 	{
 		float deltaerr = abs(deltay / deltax);    // Assume deltax != 0 (line is not vertical),
 		// note that this division needs to be done in a way that preserves the fractional part
 		int y = y0;
+		if (x0 > x1)
+		{
+			//cout << "BAD CASE" << endl;
+			temp1 = x0;
+			x0 = x1;
+			x1 = temp1;
+
+			temp2 = y0;
+			y0 = y1;
+			y1 = temp2;
+
+		}
 		for (int x = x0; x < x1; x++)
 		{
 			//CHANGE RGB VALUES plot(x, y)
-			bitMapValues[x * width + y] = 0; //RED VALUE
-			bitMapValues[x * width + y + 1] = 255; //GREEN VALUE, I like green
+			bitMapValues[x * width + y] = 255; //RED VALUE
+			bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
 			bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
 			
 			error = error + deltaerr;
 			while (error >= 0.5)
 			{
 				//CHANGE RGB VALUES plot(x, y);
-				y = y + abs(y1 - y0);
+				y = y + (y1 - y0);
 				error = error - 1.0;
 				bitMapValues[x * width + y] = 255; //RED VALUE
 				bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
@@ -158,17 +180,20 @@ void doTransform(char* file_path, int threshold)
 {
 
 	//READ IN FILE
-	int w = cols;
-	int h = rows;
 
+	
 	//Transform
 	unsigned char* BUTTMAP = readBMP(file_path);
 
+	int w = cols;
+	int h = rows;
+
+	cout << "rows" << h << "cols" << w << endl;
 	Hough hough;
 	hough.Transform(BUTTMAP, w, h);
 
 	if (threshold == 0)
-		threshold = 0;// w > h ? w / 4 : h / 4;
+		threshold = 0;//w > h ? w / 4 : h / 4;
 
 	while (1)
 	{
@@ -179,7 +204,7 @@ void doTransform(char* file_path, int threshold)
 		vector<pair<pair<int, int>, pair<int, int>>>::iterator it;
 		for (it = lines.begin(); it != lines.end(); it++)
 		{
-			drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
+			//drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
 		}
 
 		int i;
