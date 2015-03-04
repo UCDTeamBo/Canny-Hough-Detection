@@ -89,20 +89,36 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 				x1 = y1 = x2 = y2 = 0;
 
 				if(t >= 45 && t <= 135)
-				{
+				{ 
+					//we are currently under the impression that the original code first moves the origin 
+						//and then computes y from x (if) or x from y (else)
+				
+				
 					//y = (r - x cos(t)) / sin(t)
-					x1 = 0;
-					y1 = ((double)(r-(_accu_h/2)) - ((x1 - (_img_w/2) ) * cos(t * DEG2RAD))) / sin(t * DEG2RAD) + (_img_h / 2);
-					x2 = _img_w - 0;
-					y2 = ((double)(r-(_accu_h/2)) - ((x2 - (_img_w/2) ) * cos(t * DEG2RAD))) / sin(t * DEG2RAD) + (_img_h / 2);
+					x1 = (-_img_w/2);	//was 0
+					//y1 = ((double)(r-(_accu_h/2)) - ((x1 - (_img_w/2) ) * cos(t * DEG2RAD))) / sin(t * DEG2RAD) + (_img_h / 2);
+					y1 = ((double)(r) - (x1 * cos(t * DEG2RAD))) / sin(t * DEG2RAD);
+					x2 = 0; //was _img_w - 0
+					//y2 = ((double)(r-(_accu_h/2)) - ((x2 - (_img_w/2) ) * cos(t * DEG2RAD))) / sin(t * DEG2RAD) + (_img_h / 2);
+					y2 = ((double)(r) - (x2 * cos(t * DEG2RAD))) / sin(t * DEG2RAD);
+				
+					y1 = y1 _ (_img_h/2);
+					y2 = y2 + (_img_h/2);
+				
 				}
 				else
 				{
 					//x = (r - y sin(t)) / cos(t);
-					y1 = 0;
-					x1 = ((double)(r-(_accu_h/2)) - ((y1 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
-					y2 = _img_h - 0;
-					x2 = ((double)(r-(_accu_h/2)) - ((y2 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
+					y1 = (-_img_h/2);	//was 0
+					//x1 = ((double)(r-(_accu_h/2)) - ((y1 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
+					x1 = ((double)(r) - (y1 * sin(t * DEG2RAD))) / cos(t * DEG2RAD);
+					y2 = 0; //was _img_h - 0
+					//x2 = ((double)(r-(_accu_h/2)) - ((y2 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
+					x2 = ((double)(r) - (y2 * sin(t * DEG2RAD))) / cos(t * DEG2RAD);
+				
+					x1 = x1 + (_img_w/2);
+					x2 = x2 + (_img_w/2);
+					
 				}
 				//cout << "X1: " << x1 << " Y1: " << y1 << " " << " X2: " << x2 << " Y2: " << y2 << endl;
 				lines.push_back(pair< pair<int, int>, pair<int, int> >(pair<int, int>(x1,y1), pair<int, int>(x2,y2)));
