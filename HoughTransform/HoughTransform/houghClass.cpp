@@ -87,8 +87,8 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 
 				int x1, y1, x2, y2;
 				x1 = y1 = x2 = y2 = 0;
-
-				if(t >= 45 && t <= 135)
+				
+				if(t <= 45 || t >= 135)
 					//these angles for lines that hit the top and bottom
 					//HEY SHOULDN'T IT BE <45 AND >35 IF WE'RE SETTING X? X corresponds to width, yes?
 					//these angles may need to change since these angles only apply to a square
@@ -104,15 +104,15 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 					//y1 = ((double)(r) - (x1 * cos(t * DEG2RAD))) / sin(t * DEG2RAD);	//First revision
 					//y1 = (double)(r-(accu_h/2)) - (double)(r * sin(t *DEG2RAD));	//this should give a negative value = -(w/2)*tan(t*DEG2RAD)
 						//I feel like this should only be used when straight line to corner
-					y1 = -(w/2)*tan(t*DEG2RAD);
+					y1 = -(_img_w/2)*tan(t*DEG2RAD);
 					x2 = _img_w - 0;	//First revision 0
 					//y2 = ((double)(r-(_accu_h/2)) - ((x2 - (_img_w/2) ) * cos(t * DEG2RAD))) / sin(t * DEG2RAD) + (_img_h / 2);
 					//y2 = ((double)(r) - (x2 * cos(t * DEG2RAD))) / sin(t * DEG2RAD);	//First revision
 					//y2 = (double)(r+(accu_h/2)) - (double)(r * sin(t *DEG2RAD));	//this should give a positive value = (w/2)*tan(t*DEG2RAD)
-					y2 = (w/2)*tan(t*DEG2RAD);
+					y2 = (_img_w/2)*tan(t*DEG2RAD);
 				
-					//y1 = y1 _ (_img_h/2);	//Part of First Revision
-					//y2 = y2 + (_img_h/2);
+					y1 = y1 + (_img_h/2);	//Part of First Revision
+					y2 = y2 + (_img_h/2);
 				
 				}
 				else
@@ -121,17 +121,23 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 					y1 = 0;		//First revision (-_img_h/2)	//Assuming this is the bottom of the image
 					//x1 = ((double)(r-(_accu_h/2)) - ((y1 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
 					//x1 = ((double)(r) - (y1 * sin(t * DEG2RAD))) / cos(t * DEG2RAD);	//First revision
-					x1 = (-_img_h/2) * atan(t*DEG2RAD);
+					x1 = (-_img_h/2) * atan((90-t)*DEG2RAD);
 					y2 = _img_h - 0;	//First revision to 0	//Assuming this is the top of the image
 					//x2 = ((double)(r-(_accu_h/2)) - ((y2 - (_img_h/2) ) * sin(t * DEG2RAD))) / cos(t * DEG2RAD) + (_img_w / 2);
 					//x2 = ((double)(r) - (y2 * sin(t * DEG2RAD))) / cos(t * DEG2RAD);	//First revision
-					x2 = (_img_h/2) * atan(t*DEG2RAD);
+					x2 = (_img_h/2) * atan((90-t)*DEG2RAD);
 				
-					//x1 = x1 + (_img_w/2);	//Part of First Revision
-					//x2 = x2 + (_img_w/2);
+					x1 = x1 + (_img_w/2);	//Part of First Revision
+					x2 = x2 + (_img_w/2);
 					
 				}
 				//cout << "X1: " << x1 << " Y1: " << y1 << " " << " X2: " << x2 << " Y2: " << y2 << endl;
+				//if ((x1 == 0 || x2 == 1920) && ((y1 < -1280 || y1 > 1280) || (y2 < -1280 || y2 > 1280)))
+				if ((y1>2560 || y1<-2560) || (y2>2560||y2<-2560))
+					cout << "error in y" << endl;
+				//if ((y1 == 0 || y2 == 2560) && ((x1 < -960 || x2>960) || (x2 < -960 || x2>960)))
+				if ((x1>1960 || x1<-1960) || (x2>1960 || x2<-1960))
+					cout << "error in x" << endl;
 				lines.push_back(pair< pair<int, int>, pair<int, int> >(pair<int, int>(x1,y1), pair<int, int>(x2,y2)));
 
 			}

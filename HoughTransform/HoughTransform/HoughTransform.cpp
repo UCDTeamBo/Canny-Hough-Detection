@@ -21,6 +21,7 @@ int rows;
 unsigned char* pixData;
 unsigned char info[54];
 static bitmap_info_header_t ih;
+int count_T = 0; 
 //bitmap_info_header_t *BMIH;
 
 void doTransform(char *, int threshold);
@@ -71,41 +72,86 @@ unsigned char* readBMP(char* filename)
 
 	int size = 3 * width * height;
 	unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
+	cout << "Image Size" << size << endl;
 	fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
 	fclose(f);
 
 	for (i = 0; i < size; i += 3)
 	{
+		//if (i < 12)
+			// << "Pixel #: " << i / 3 << " "<< "Red: " << (double) data[i + 2] << " " << "Green: " << (double) data[i + 1] << " " << "Blue: " <<  (double)data[i] << endl; 
 		unsigned char tmp = data[i];
 		data[i] = data[i + 2];
 		data[i + 2] = tmp;
 	}
+
 
 	return data;
 }
 
 void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int width)
 {
+	int temp1, temp2; 
+	temp1 = 0; 
+	temp2 = 0;
+	if (x0 > x1)
+	{
+		//cout << "BAD CASE" << endl;
+		temp1 = x0;
+		x0 = x1;
+		x1 = temp1;
+
+		temp2 = y0;
+		y0 = y1;
+		y1 = temp2;
+
+	}
 	int deltax = x1 - x0;
 	int deltay = y1 - y0;
 	float error = 0;
-	int temp1, temp2;
-	//cout << "X1: " << x0 << " Y1: " << y0 << " " << " X2: " << x1 << " Y2: " << y1 << endl;
+	
+	//cout << "X0: " << x0 << " Y0: " << y0 << " " << " X1: " << x1 << " Y1: " << y1 << endl;
 	if (deltax == 0 || deltay == 0)
 	{
+		
+		if (deltax == 0){
+			int x = x0;
+			for (int y = y0; y < y1; y++)
+			{
+				//CHANGE RGB VALUES plot(x, y)
+				//cout << "Size" << ((x*width) + y) << endl;
+				//bitMapValues[y * width + x] = 0; //RED VALUE
+				//bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
+				//bitMapValues[x * width + y + 2] = 127; //BLUE VALUE
+			}
+		}
+		else if (deltay == 0){
+			
+			int y = y0; 
+			for (int x = x0; x < x1; x++)
+			{
+				//CHANGE RGB VALUES plot(x, y)
+				//cout << "Size" << ((x*width) + y) << endl;
+				//bitMapValues[y * width + x] = 0; //RED VALUE
+				//bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
+				//bitMapValues[x * width + y + 2] = 127; //BLUE VALUE
+			}
+		}
 		return;
 		//logic for vertical line
-	}
+	}/*
 	if (x0 == 0)
 	{
 		x0 = x0 + 1;
 	}
 	else
-	{
+	{*/
+	count_T++;
+	//cout << "X0: " << x0 << " Y0: " << y0 << " " << " X1: " << x1 << " Y1: " << y1 << endl;
 		float deltaerr = abs(deltay / deltax);    // Assume deltax != 0 (line is not vertical),
 		// note that this division needs to be done in a way that preserves the fractional part
 		int y = y0;
-		if (x0 > x1)
+		/*if (x0 > x1)
 		{
 			//cout << "BAD CASE" << endl;
 			temp1 = x0;
@@ -116,31 +162,39 @@ void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int w
 			y0 = y1;
 			y1 = temp2;
 
-		}
+		}*/
 		for (int x = x0; x < x1; x++)
 		{
 			//CHANGE RGB VALUES plot(x, y)
-			bitMapValues[x * width + y] = 255; //RED VALUE
-			bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
-			bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
+			//cout << "Size" << ((x*width) + y) << endl;
+			bitMapValues[x * width + y] = 250; //RED VALUE
+			//bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
+			//bitMapValues[x * width + y + 2] = 127; //BLUE VALUE
 			
 			error = error + deltaerr;
 			while (error >= 0.5)
 			{
 				//CHANGE RGB VALUES plot(x, y);
-				y = y + (y1 - y0);
+				if ((y1 - y0) > 0){
+					y = y + 1;
+				}
+				else
+				{
+					y = y - 1; 
+				}
 				error = error - 1.0;
-				bitMapValues[x * width + y] = 255; //RED VALUE
-				bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
-				bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
+				bitMapValues[x * width + y] = 250; //RED VALUE
+				//bitMapValues[x * width + y + 1] = 0; //GREEN VALUE, I like green
+				//bitMapValues[x * width + y + 2] = 0; //BLUE VALUE
 
 			}
 		}
-	}
+	//}
 }
 
 int main(const int argc, const char ** const argv)
 {
+	//count = 0;
     canny CANNY;
     const pixel_t *in_bitmap_data = CANNY.load_bmp(img_path, &ih);
     if (in_bitmap_data == NULL) {
@@ -204,11 +258,12 @@ void doTransform(char* file_path, int threshold)
 		vector<pair<pair<int, int>, pair<int, int>>>::iterator it;
 		for (it = lines.begin(); it != lines.end(); it++)
 		{
-			//drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
+			drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
 		}
 
 		int i;
-		FILE* f = fopen(file_path, "rb");
+		FILE* f = fopen("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
+		//C:\Users\Lindsey\Documents\GitHub\Canny-Hough-Detection\HoughTransform\HoughTransform
 		fwrite(info, sizeof(unsigned char), 54, f); // write the 54-byte header
 
 		int width = *(int*)&info[18];
@@ -221,7 +276,7 @@ void doTransform(char* file_path, int threshold)
 		/*canny HOUGH;
 		const pixel_t* ptr = (pixel_t*) BUTTMAP;
 		HOUGH.save_bmp("out2.bmp", &ih, ptr);*/
-
+		cout << count_T << endl;
 		char input;
 		cin >> input;
 
