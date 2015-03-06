@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define DEG2RAD 0.017453293f
+#define RAD2DEG 57.2957795f
 
 Hough::Hough():_accu(0), _accu_w(0), _accu_h(0), _img_w(0), _img_h(0)
 {
@@ -88,7 +89,11 @@ vector< pair< pair<int, int>, pair<int, int> > > Hough::GetLines(int threshold)
 				int x1, y1, x2, y2;
 				x1 = y1 = x2 = y2 = 0;
 				
-				if(t <= 45 || t >= 135)
+				int angle_to_top_right = RAD2DEG * atan(((_img_h/2) / (_img_w/2)) * DEG2RAD);
+				int angle_to_top_left = 180 - angle_to_top_right;
+				
+				//if(t <= 45 || t >= 135)
+				if(t<=angle_to_top_right || t>=angle_to_top_left)
 					//these angles for lines that hit the top and bottom
 					//HEY SHOULDN'T IT BE <45 AND >35 IF WE'RE SETTING X? X corresponds to width, yes?
 					//these angles may need to change since these angles only apply to a square
