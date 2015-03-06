@@ -14,7 +14,9 @@
 
 using namespace std;
 
-char * img_path = "C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced by output of Canny code
+//char * img_path = "C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced 
+char * img_path = "C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced 
+//by output of Canny code
 int threshold = 0;
 int cols;
 int rows;
@@ -89,9 +91,53 @@ unsigned char* readBMP(char* filename)
 	return data;
 }
 
-void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int width)
+void drawLine(int x1, int x2, int y1, int y2, unsigned char* bitMapValues, int width)
 {
-	int temp1, temp2; 
+	// Bresenham's line algorithm
+	const bool steep = (fabs((float)y2 - y1) > fabs((float)x2 - x1));
+	if (steep)
+	{
+		swap(x1, y1);
+		swap(x2, y2);
+	}
+
+	if (x1 > x2)
+	{
+		swap(x1, x2);
+		swap(y1, y2);
+	}
+
+	const float dx = x2 - x1;
+	const float dy = fabs((float)y2 - y1);
+
+	float error = dx / 2.0f;
+	const int ystep = ((float)y1 < y2) ? 1 : -1;
+	int y = (int)y1;
+
+	const int maxX = (int)x2;
+
+	for (int x = (int)x1; x<maxX; x++)
+	{
+		if (steep)
+		{
+			//SetPixel(y, x, color);
+			bitMapValues[x * width + y] = 250; //RED VALUE
+		}
+		else
+		{
+			//SetPixel(x, y, color);
+			bitMapValues[y * width + x] = 250; //RED VALUE
+		}
+
+		error -= dy;
+		if (error < 0)
+		{
+			y += ystep;
+			error += dx;
+		}
+	}
+}
+	/*int temp1, temp2; 
 	temp1 = 0; 
 	temp2 = 0;
 	if (x0 > x1)
@@ -139,19 +185,19 @@ void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int w
 		}
 		return;
 		//logic for vertical line
-	}/*
+	}
 	if (x0 == 0)
 	{
 		x0 = x0 + 1;
 	}
 	else
-	{*/
+	{
 	count_T++;
 	//cout << "X0: " << x0 << " Y0: " << y0 << " " << " X1: " << x1 << " Y1: " << y1 << endl;
 		float deltaerr = abs(deltay / deltax);    // Assume deltax != 0 (line is not vertical),
 		// note that this division needs to be done in a way that preserves the fractional part
 		int y = y0;
-		/*if (x0 > x1)
+		if (x0 > x1)
 		{
 			//cout << "BAD CASE" << endl;
 			temp1 = x0;
@@ -162,7 +208,7 @@ void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int w
 			y0 = y1;
 			y1 = temp2;
 
-		}*/
+		}
 		for (int x = x0; x < x1; x++)
 		{
 			//CHANGE RGB VALUES plot(x, y)
@@ -190,7 +236,7 @@ void drawLine(int x0, int x1, int y0, int y1, unsigned char* bitMapValues, int w
 			}
 		}
 	//}
-}
+}*/
 
 int main(const int argc, const char ** const argv)
 {
@@ -220,7 +266,8 @@ int main(const int argc, const char ** const argv)
 
 	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
 
-	doTransform("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
+	//doTransform("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
+	doTransform("C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
 
 	free((pixel_t*)in_bitmap_data);
 	free((pixel_t*)out_bitmap_data);
@@ -246,8 +293,10 @@ void doTransform(char* file_path, int threshold)
 	Hough hough;
 	hough.Transform(BUTTMAP, w, h);
 
-	if (threshold == 0)
-		threshold = 0;//w > h ? w / 4 : h / 4;
+	//cout << (w > h ? w / 4 : h / 4) << ": Value" << endl;
+	//HIS THRESHOLD VALUE IS 640
+	//if (threshold == 0)
+	threshold = 320;//w > h ? w / 4 : h / 4;
 
 	while (1)
 	{
@@ -262,7 +311,8 @@ void doTransform(char* file_path, int threshold)
 		}
 
 		int i;
-		FILE* f = fopen("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
+		//FILE* f = fopen("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
+		FILE* f = fopen("C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
 		//C:\Users\Lindsey\Documents\GitHub\Canny-Hough-Detection\HoughTransform\HoughTransform
 		fwrite(info, sizeof(unsigned char), 54, f); // write the 54-byte header
 
