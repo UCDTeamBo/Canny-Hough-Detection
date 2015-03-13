@@ -11,17 +11,18 @@
 #include "houghClass.h"
 #include "canny.h"
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
-//char * img_path = "C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced 
-char * img_path = "C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced 
+char * img_path = "C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced 
+//char * img_path = "C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/image.bmp"; //this will be replaced 
 //by output of Canny code
 int threshold = 0;
 int cols;
 int rows;
 unsigned char* pixData;
-unsigned char info[54];
+unsigned char info[1078];
 static bitmap_info_header_t ih;
 int count_T = 0; 
 //bitmap_info_header_t *BMIH;
@@ -33,7 +34,7 @@ unsigned char* readBMP(char* filename)
 	int i;
 	FILE* f = fopen(filename, "rb");
 
-	fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
+	fread(info, sizeof(unsigned char), 1078, f); // read the 54-byte header
 	
 	/*if (fseek(f, 0, SEEK_SET)) 
 	{
@@ -68,24 +69,33 @@ unsigned char* readBMP(char* filename)
 	// extract image height and width from header
 	int width = *(int*)&info[18];
 	int height = *(int*)&info[22];
+	int size_pixel = *(int*)&info[28];
+	int offset = *(int*)&info[10];
+	cout << "Offset: " << offset << endl; 
+	cout << "Bits Per Pixel: " << size_pixel << endl; 
+	cout << "Read Size: " << sizeof(unsigned char) << endl;
 
 	cols = width; 
 	rows = height; 
 
-	int size = 3 * width * height;
+	
+	int size = width * height;
+
 	unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
-	cout << "Image Size" << size << endl;
-	fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
+	unsigned char* datatrash = new unsigned char[offset-54];
+
+	//fread(datatrash, sizeof(unsigned char), offset-54, f); // read the rest of junk data
+	fread(data, sizeof(unsigned char), size, f);
 	fclose(f);
 
-	for (i = 0; i < size; i += 3)
+	/*for (i = 0; i < size; i += 3)
 	{
 		//if (i < 12)
 			// << "Pixel #: " << i / 3 << " "<< "Red: " << (double) data[i + 2] << " " << "Green: " << (double) data[i + 1] << " " << "Blue: " <<  (double)data[i] << endl; 
 		unsigned char tmp = data[i];
 		data[i] = data[i + 2];
 		data[i + 2] = tmp;
-	}
+	}*/
 
 
 	return data;
@@ -266,8 +276,8 @@ int main(const int argc, const char ** const argv)
 
 	//OPEN CV USE: Creates dialog windows to display images and allow for better UI
 
-	//doTransform("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
-	doTransform("C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
+	doTransform("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
+	//doTransform("C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/out.bmp", threshold);
 
 	free((pixel_t*)in_bitmap_data);
 	free((pixel_t*)out_bitmap_data);
@@ -296,8 +306,9 @@ void doTransform(char* file_path, int threshold)
 	//cout << (w > h ? w / 4 : h / 4) << ": Value" << endl;
 	//HIS THRESHOLD VALUE IS 640
 	//if (threshold == 0)
-	threshold = 320;//w > h ? w / 4 : h / 4;
-
+	threshold = w > h ? w / 10 : h / 10;
+	ofstream outFile("Hough_Line_Points.csv");
+	 
 	while (1)
 	{
 		//Creating output
@@ -307,12 +318,14 @@ void doTransform(char* file_path, int threshold)
 		vector<pair<pair<int, int>, pair<int, int>>>::iterator it;
 		for (it = lines.begin(); it != lines.end(); it++)
 		{
-			drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
-		}
 
+			//drawLine(it->first.first, it->second.first, it->first.second, it->second.second, BUTTMAP, w);
+			outFile << it->first.first << "," << it->second.first << "," << it->first.second << "," << it->second.second << "," << "\n";
+		}
+		outFile.close();
 		int i;
-		//FILE* f = fopen("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
-		FILE* f = fopen("C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
+		FILE* f = fopen("C:/Users/Lindsey/Documents/GitHub/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
+		//FILE* f = fopen("C:/Users/Chris/Documents/Visual Studio 2013/Projects/Canny-Hough-Detection/HoughTransform/HoughTransform/out_BUTT.bmp", "wb");
 		//C:\Users\Lindsey\Documents\GitHub\Canny-Hough-Detection\HoughTransform\HoughTransform
 		fwrite(info, sizeof(unsigned char), 54, f); // write the 54-byte header
 
